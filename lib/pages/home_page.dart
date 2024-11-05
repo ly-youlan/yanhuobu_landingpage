@@ -99,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage>
                         '测试烟火簿 Beta',
                         style: TextStyle(
                           fontSize: 48,
-                          fontWeight: FontWeight.bold,
+                          // fontWeight: FontWeight.bold,
                           color: Color(0xFF333333),
                           letterSpacing: 1.2,
                           fontFamily: 'huiwen',
@@ -128,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage>
                         children: [
                           _buildDownloadButton(
                             onPressed: () => _launchURL(
-                                'https://publicityprobeijing.oss-cn-beijing.aliyuncs.com/app-release.apk'),
+                                'https://publicitypro.oss-cn-shenzhen.aliyuncs.com/landingpage/app-release.apk'),
                             icon: Icons.android,
                             label: 'Android下载',
                             isEnabled: true,
