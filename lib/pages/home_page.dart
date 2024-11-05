@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class Version {
   final String version;
@@ -175,14 +176,31 @@ class _MyHomePageState extends State<MyHomePage>
       child: MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          transform: Matrix4.identity()
-            ..translate(0.0, _isHovered ? -10.0 : 0.0),
-          child: Image.asset(
-            'lib/images/phone_035.png',
-            height: _getDeviceType(context) == DeviceType.mobile ? 600 : 900,
-          ),
+        child: TweenAnimationBuilder(
+          duration: const Duration(milliseconds: 800),
+          tween: Tween<double>(begin: 0.0, end: 1.0),
+          builder: (context, double value, child) {
+            return Transform.translate(
+              offset: Offset(0.0, 20 * (1 - value)), // 上移动画
+              child: Opacity(
+                opacity: value,
+                child: Transform.scale(
+                  scale: 0.95 + (0.05 * value), // 缩放动画
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    transform: Matrix4.identity()
+                      ..translate(0.0, _isHovered ? -10.0 : 0.0),
+                    child: Image.asset(
+                      'lib/images/phone_035.png',
+                      height: _getDeviceType(context) == DeviceType.mobile
+                          ? 600
+                          : 900,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -199,27 +217,31 @@ class _MyHomePageState extends State<MyHomePage>
           ? CrossAxisAlignment.center
           : CrossAxisAlignment.start,
       children: [
-        FadeInRight(
-          duration: const Duration(milliseconds: 1000),
-          child: Text(
-            '烟火簿 Beta',
-            style: TextStyle(
-              fontSize: titleSize,
-              color: const Color(0xFF333333),
-              letterSpacing: 1.2,
-              fontFamily: 'huiwen',
-            ),
-            textAlign: deviceType == DeviceType.mobile
-                ? TextAlign.center
-                : TextAlign.start,
+        DefaultTextStyle(
+          style: TextStyle(
+            fontSize: titleSize,
+            color: const Color(0xFF333333),
+            letterSpacing: 1.2,
+            fontFamily: 'huiwen',
+          ),
+          textAlign: deviceType == DeviceType.mobile
+              ? TextAlign.center
+              : TextAlign.start,
+          child: AnimatedTextKit(
+            animatedTexts: [
+              TypewriterAnimatedText(
+                '烟火簿 Beta',
+                speed: const Duration(milliseconds: 200),
+              ),
+            ],
+            isRepeatingAnimation: false,
           ),
         ),
         const SizedBox(height: 24),
-        FadeInRight(
-          delay: const Duration(milliseconds: 200),
-          duration: const Duration(milliseconds: 1000),
-          child: Text(
-            '一周食记，快速启程',
+        FadeIn(
+          delay: const Duration(milliseconds: 1500),
+          duration: const Duration(milliseconds: 200),
+          child: DefaultTextStyle(
             style: TextStyle(
               fontSize: subtitleSize,
               color: const Color(0xFF666666),
@@ -229,11 +251,23 @@ class _MyHomePageState extends State<MyHomePage>
             textAlign: deviceType == DeviceType.mobile
                 ? TextAlign.center
                 : TextAlign.start,
+            child: AnimatedTextKit(
+              animatedTexts: [
+                TypewriterAnimatedText(
+                  '一周食记，快速启程',
+                  speed: const Duration(milliseconds: 150),
+                ),
+              ],
+              isRepeatingAnimation: false,
+              totalRepeatCount: 1,
+              displayFullTextOnTap: true,
+              stopPauseOnTap: true,
+            ),
           ),
         ),
         const SizedBox(height: 48),
         FadeInRight(
-          delay: const Duration(milliseconds: 400),
+          delay: const Duration(milliseconds: 2800),
           duration: const Duration(milliseconds: 1000),
           child: _buildDownloadButtons(deviceType),
         ),
