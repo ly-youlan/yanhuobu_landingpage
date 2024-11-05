@@ -69,11 +69,11 @@ flutter:
     #UI元素 已收录
     - family: huiwen
       fonts:
-        - asset: lib/fonts/huiwen.otf
+        - asset: lib/fonts/huiwen-subset.ttf
     #内容文字
     - family: danya
       fonts:
-        - asset: lib/fonts/danya.ttf
+        - asset: lib/fonts/danya-subset.ttf
 
 
 
