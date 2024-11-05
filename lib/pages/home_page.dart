@@ -271,7 +271,7 @@ class _MyHomePageState extends State<MyHomePage>
       _buildDownloadButton(
         onPressed: null,
         icon: Icons.apple,
-        label: 'iOS即将推出',
+        label: 'iOS版本即将推出',
         isEnabled: false,
       ),
     ];
@@ -476,39 +476,39 @@ class GradientBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80); // 添加模糊效果
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100); // 增加模糊半径
 
-    // 第一个渐变 - 浅紫色
+    // 第一个渐变 - 亮紫色
     final gradient1 = RadialGradient(
       center: const Alignment(-0.5, -0.5),
-      radius: 1.0,
-      colors: [
-        const Color(0xFFE8D8FD).withOpacity(0.3),
-        Colors.transparent,
-      ],
-      stops: const [0.0, 0.8],
-    );
-
-    // 第二个渐变 - 浅青色
-    final gradient2 = RadialGradient(
-      center: const Alignment(0.8, 0.8),
       radius: 1.2,
       colors: [
-        const Color(0xFFD0F0F7).withOpacity(0.25),
+        const Color(0xFF9C7EF3).withOpacity(0.25), // 更鲜艳的紫色
         Colors.transparent,
       ],
-      stops: const [0.0, 0.8],
+      stops: const [0.0, 0.7],
     );
 
-    // 第三个渐变 - 浅粉色
-    final gradient3 = RadialGradient(
-      center: const Alignment(0.5, -0.2),
-      radius: 0.8,
+    // 第二个渐变 - 青绿色
+    final gradient2 = RadialGradient(
+      center: const Alignment(0.8, 0.8),
+      radius: 1.4,
       colors: [
-        const Color(0xFFFFE8EC).withOpacity(0.2),
+        const Color(0xFF4AD9B0).withOpacity(0.2), // 更鲜艳的青绿色
         Colors.transparent,
       ],
-      stops: const [0.0, 0.8],
+      stops: const [0.0, 0.7],
+    );
+
+    // 第三个渐变 - 珊瑚粉色
+    final gradient3 = RadialGradient(
+      center: const Alignment(0.5, -0.2),
+      radius: 1.0,
+      colors: [
+        const Color(0xFFFF7E7E).withOpacity(0.15), // 更鲜艳的珊瑚色
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.7],
     );
 
     // 绘制渐变
