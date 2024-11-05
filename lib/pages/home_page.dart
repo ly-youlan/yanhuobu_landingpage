@@ -22,6 +22,18 @@ class _MyHomePageState extends State<MyHomePage>
   static const androidGreen = Color(0xFF3DDC84);
   static const androidDarkGreen = Color(0xFF2DA866);
 
+  // 添加布局相关的常量
+  static const double _desktopBreakpoint = 900.0;
+  static const double _tabletBreakpoint = 600.0;
+
+  // 获取当前设备类型
+  DeviceType _getDeviceType(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    if (width >= _desktopBreakpoint) return DeviceType.desktop;
+    if (width >= _tabletBreakpoint) return DeviceType.tablet;
+    return DeviceType.mobile;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -47,10 +59,18 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
+    final deviceType = _getDeviceType(context);
+    final bool isDesktop = deviceType == DeviceType.desktop;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
@@ -58,99 +78,168 @@ class _MyHomePageState extends State<MyHomePage>
               Color(0xFFE5E5E5),
             ],
             stops: [0.0, 1.0],
-            transform: GradientRotation(45 * 3.14 / 180), // 45度角旋转
-            tileMode: TileMode.repeated, // 重复渐变
+            transform: GradientRotation(45 * 3.14 / 180),
+            tileMode: TileMode.repeated,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 48.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                flex: 1,
-                child: FadeInLeft(
-                  duration: const Duration(milliseconds: 1200),
-                  child: MouseRegion(
-                    onEnter: (_) => setState(() => _isHovered = true),
-                    onExit: (_) => setState(() => _isHovered = false),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      transform: Matrix4.identity()
-                        ..translate(0.0, _isHovered ? -10.0 : 0.0),
-                      child: Image.asset(
-                        'lib/images/phone_035.png',
-                        height: 600,
-                      ),
-                    ),
-                  ),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Container(
+              constraints: BoxConstraints(
+                minHeight: screenHeight,
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05,
+                  vertical: 24.0,
+                ),
+                child: Center(
+                  child:
+                      isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
                 ),
               ),
-              const SizedBox(width: 64),
-              Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FadeInRight(
-                      duration: const Duration(milliseconds: 1000),
-                      child: const Text(
-                        '测试烟火簿 Beta',
-                        style: TextStyle(
-                          fontSize: 48,
-                          // fontWeight: FontWeight.bold,
-                          color: Color(0xFF333333),
-                          letterSpacing: 1.2,
-                          fontFamily: 'huiwen',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    FadeInRight(
-                      delay: const Duration(milliseconds: 200),
-                      duration: const Duration(milliseconds: 1000),
-                      child: const Text(
-                        '一周食记，快速启程',
-                        style: TextStyle(
-                          fontSize: 24,
-                          color: Color(0xFF666666),
-                          letterSpacing: 0.5,
-                          fontFamily: 'danya',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    FadeInRight(
-                      delay: const Duration(milliseconds: 400),
-                      duration: const Duration(milliseconds: 1000),
-                      child: Row(
-                        children: [
-                          _buildDownloadButton(
-                            onPressed: () => _launchURL(
-                                'https://publicitypro.oss-cn-shenzhen.aliyuncs.com/landingpage/app-release.apk'),
-                            icon: Icons.android,
-                            label: 'Android下载',
-                            isEnabled: true,
-                          ),
-                          const SizedBox(width: 16),
-                          _buildDownloadButton(
-                            onPressed: null,
-                            icon: Icons.apple,
-                            label: 'iOS即将推出',
-                            isEnabled: false,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 1,
+          child: _buildPhoneImage(),
+        ),
+        const SizedBox(width: 64),
+        Expanded(
+          flex: 1,
+          child: _buildContent(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileLayout() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildContent(),
+        const SizedBox(height: 32),
+        _buildPhoneImage(),
+      ],
+    );
+  }
+
+  Widget _buildPhoneImage() {
+    return FadeInLeft(
+      duration: const Duration(milliseconds: 1200),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          transform: Matrix4.identity()
+            ..translate(0.0, _isHovered ? -10.0 : 0.0),
+          child: Image.asset(
+            'lib/images/phone_035.png',
+            height: _getDeviceType(context) == DeviceType.mobile ? 400 : 600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    final deviceType = _getDeviceType(context);
+    final titleSize = deviceType == DeviceType.mobile ? 32.0 : 48.0;
+    final subtitleSize = deviceType == DeviceType.mobile ? 18.0 : 24.0;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: deviceType == DeviceType.mobile
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
+      children: [
+        FadeInRight(
+          duration: const Duration(milliseconds: 1000),
+          child: Text(
+            '测试烟火簿 Beta',
+            style: TextStyle(
+              fontSize: titleSize,
+              color: const Color(0xFF333333),
+              letterSpacing: 1.2,
+              fontFamily: 'huiwen',
+            ),
+            textAlign: deviceType == DeviceType.mobile
+                ? TextAlign.center
+                : TextAlign.start,
+          ),
+        ),
+        const SizedBox(height: 24),
+        FadeInRight(
+          delay: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 1000),
+          child: Text(
+            '一周食记，快速启程',
+            style: TextStyle(
+              fontSize: subtitleSize,
+              color: const Color(0xFF666666),
+              letterSpacing: 0.5,
+              fontFamily: 'danya',
+            ),
+            textAlign: deviceType == DeviceType.mobile
+                ? TextAlign.center
+                : TextAlign.start,
+          ),
+        ),
+        const SizedBox(height: 48),
+        FadeInRight(
+          delay: const Duration(milliseconds: 400),
+          duration: const Duration(milliseconds: 1000),
+          child: _buildDownloadButtons(deviceType),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDownloadButtons(DeviceType deviceType) {
+    final buttonLayout = deviceType == DeviceType.mobile
+        ? Column(
+            children: _getDownloadButtons(spacing: 16.0, isVertical: true),
+          )
+        : Row(
+            mainAxisAlignment: deviceType == DeviceType.mobile
+                ? MainAxisAlignment.center
+                : MainAxisAlignment.start,
+            children: _getDownloadButtons(spacing: 16.0, isVertical: false),
+          );
+
+    return buttonLayout;
+  }
+
+  List<Widget> _getDownloadButtons({
+    required double spacing,
+    required bool isVertical,
+  }) {
+    return [
+      _buildDownloadButton(
+        onPressed: () => _launchURL(
+            'https://publicitypro.oss-cn-shenzhen.aliyuncs.com/landingpage/app-release.apk'),
+        icon: Icons.android,
+        label: 'Android下载',
+        isEnabled: true,
+      ),
+      isVertical ? SizedBox(height: spacing) : SizedBox(width: spacing),
+      _buildDownloadButton(
+        onPressed: null,
+        icon: Icons.apple,
+        label: 'iOS即将推出',
+        isEnabled: false,
+      ),
+    ];
   }
 
   Widget _buildDownloadButton({
@@ -205,4 +294,10 @@ class _MyHomePageState extends State<MyHomePage>
     debugPrint(
         'Current font family: ${Theme.of(context).textTheme.bodyLarge?.fontFamily}');
   }
+}
+
+enum DeviceType {
+  mobile,
+  tablet,
+  desktop,
 }

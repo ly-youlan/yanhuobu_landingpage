@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'pages/home_page.dart';
@@ -29,17 +31,26 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         // 考虑使用动态字体加载
         fontFamily: 'huiwen',
+        // 设置透明背景
+        scaffoldBackgroundColor: Colors.transparent,
+        // 移除默认的水波纹效果
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
       ),
       // 添加加载页面
       builder: (context, child) {
-        return FutureBuilder(
-          future: _loadInitialResources(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return child!;
-            }
-            return const CircularProgressIndicator();
-          },
+        return MediaQuery(
+          // 设置最小宽度，防止内容过度压缩
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(
+              clampDouble(
+                MediaQuery.of(context).textScaleFactor,
+                0.8,
+                1.2,
+              ),
+            ),
+          ),
+          child: child!,
         );
       },
       home: const MyHomePage(title: '烟火簿'),
