@@ -5,6 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:animate_do/animate_do.dart';
 
+class Version {
+  final String version;
+  final String date;
+  final String description;
+  final List<String> changes;
+
+  const Version({
+    required this.version,
+    required this.date,
+    required this.description,
+    required this.changes,
+  });
+}
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
@@ -41,6 +55,20 @@ class _MyHomePageState extends State<MyHomePage>
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
+
+    // 启动背景动画循环
+    _startBackgroundAnimation();
+  }
+
+  void _startBackgroundAnimation() {
+    Future.delayed(const Duration(seconds: 20), () {
+      if (mounted) {
+        setState(() {
+          // 触发动画更新
+        });
+        _startBackgroundAnimation();
+      }
+    });
   }
 
   @override
@@ -66,58 +94,64 @@ class _MyHomePageState extends State<MyHomePage>
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFF2F2F2),
-              Color(0xFFE5E5E5),
-            ],
-            stops: [0.0, 1.0],
-            transform: GradientRotation(45 * 3.14 / 180),
-            tileMode: TileMode.repeated,
+      body: Stack(
+        children: [
+          // 单一背景层，包含多个模糊渐变
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              color: Color(0xFFFAFAFA),
+            ),
+            child: CustomPaint(
+              painter: GradientBackgroundPainter(),
+            ),
           ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Container(
-              constraints: BoxConstraints(
-                minHeight: screenHeight,
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.05,
-                  vertical: 24.0,
+          // 内容层
+          Center(
+            child: SingleChildScrollView(
+              child: Container(
+                constraints: BoxConstraints(
+                  minHeight: screenHeight,
                 ),
-                child: Center(
-                  child:
-                      isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.05,
+                    vertical: 24.0,
+                  ),
+                  child: Center(
+                    child: isDesktop
+                        ? _buildDesktopLayout()
+                        : _buildMobileLayout(),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildDesktopLayout() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       children: [
-        Expanded(
-          flex: 1,
-          child: _buildPhoneImage(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              flex: 1,
+              child: _buildPhoneImage(),
+            ),
+            const SizedBox(width: 64),
+            Expanded(
+              flex: 1,
+              child: _buildContent(),
+            ),
+          ],
         ),
-        const SizedBox(width: 64),
-        Expanded(
-          flex: 1,
-          child: _buildContent(),
-        ),
+        const SizedBox(height: 96),
+        _buildVersionHistory(),
       ],
     );
   }
@@ -126,9 +160,11 @@ class _MyHomePageState extends State<MyHomePage>
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildContent(),
-        const SizedBox(height: 32),
         _buildPhoneImage(),
+        const SizedBox(height: 0),
+        _buildContent(),
+        const SizedBox(height: 64),
+        _buildVersionHistory(),
       ],
     );
   }
@@ -145,7 +181,7 @@ class _MyHomePageState extends State<MyHomePage>
             ..translate(0.0, _isHovered ? -10.0 : 0.0),
           child: Image.asset(
             'lib/images/phone_035.png',
-            height: _getDeviceType(context) == DeviceType.mobile ? 400 : 600,
+            height: _getDeviceType(context) == DeviceType.mobile ? 600 : 900,
           ),
         ),
       ),
@@ -166,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage>
         FadeInRight(
           duration: const Duration(milliseconds: 1000),
           child: Text(
-            '测试烟火簿 Beta',
+            '烟火簿 Beta',
             style: TextStyle(
               fontSize: titleSize,
               color: const Color(0xFF333333),
@@ -226,8 +262,7 @@ class _MyHomePageState extends State<MyHomePage>
   }) {
     return [
       _buildDownloadButton(
-        onPressed: () => _launchURL(
-            'https://publicitypro.oss-cn-shenzhen.aliyuncs.com/landingpage/app-release.apk'),
+        onPressed: () => _launchURL('http://47.104.253.90/app-release.apk'),
         icon: Icons.android,
         label: 'Android下载',
         isEnabled: true,
@@ -294,10 +329,199 @@ class _MyHomePageState extends State<MyHomePage>
     debugPrint(
         'Current font family: ${Theme.of(context).textTheme.bodyLarge?.fontFamily}');
   }
+
+  final List<Version> _versions = const [
+    Version(
+      version: "v0.1.0",
+      date: "2024-11-05",
+      description: "Initial Beta Release",
+      changes: [
+        "Email login",
+        "Basic meal plan management",
+        "Swipe Logic demonstration",
+      ],
+    ),
+    // Version(
+    //   version: "v0.2.0",
+    //   date: "2024-03-25",
+    //   description: "Feature Update",
+    //   changes: [
+    //     "Data export feature",
+    //     "UI improvements",
+    //     "Bug fixes",
+    //   ],
+    // ),
+  ];
+
+  Widget _buildVersionHistory() {
+    return FadeInUp(
+      duration: const Duration(milliseconds: 1000),
+      child: Column(
+        children: [
+          const Text(
+            "Version History",
+            style: TextStyle(
+              fontSize: 24,
+              color: Color(0xFF333333),
+            ),
+          ),
+          const SizedBox(height: 32),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _versions.length,
+              itemBuilder: (context, index) {
+                final version = _versions[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 24.0),
+                  child: _buildVersionCard(version, index),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVersionCard(Version version, int index) {
+    return SlideInLeft(
+      duration: Duration(milliseconds: 800 + (index * 200)),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  version.version,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: androidGreen,
+                  ),
+                ),
+                Text(
+                  version.date,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF666666),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              version.description,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF333333),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...version.changes
+                .map((change) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle_outline,
+                            color: androidGreen,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            change,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF666666),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 enum DeviceType {
   mobile,
   tablet,
   desktop,
+}
+
+// 添加自定义画布类
+class GradientBackgroundPainter extends CustomPainter {
+  const GradientBackgroundPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80); // 添加模糊效果
+
+    // 第一个渐变 - 浅紫色
+    final gradient1 = RadialGradient(
+      center: const Alignment(-0.5, -0.5),
+      radius: 1.0,
+      colors: [
+        const Color(0xFFE8D8FD).withOpacity(0.3),
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.8],
+    );
+
+    // 第二个渐变 - 浅青色
+    final gradient2 = RadialGradient(
+      center: const Alignment(0.8, 0.8),
+      radius: 1.2,
+      colors: [
+        const Color(0xFFD0F0F7).withOpacity(0.25),
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.8],
+    );
+
+    // 第三个渐变 - 浅粉色
+    final gradient3 = RadialGradient(
+      center: const Alignment(0.5, -0.2),
+      radius: 0.8,
+      colors: [
+        const Color(0xFFFFE8EC).withOpacity(0.2),
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.8],
+    );
+
+    // 绘制渐变
+    paint.shader = gradient1.createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, paint);
+
+    paint.shader = gradient2.createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, paint);
+
+    paint.shader = gradient3.createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, paint);
+  }
+
+  @override
+  bool shouldRepaint(GradientBackgroundPainter oldDelegate) => false;
 }

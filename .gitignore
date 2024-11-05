@@ -46,3 +46,4 @@ app.*.map.json
 lib/fonts/characters.txt
 lib/fonts/danya.ttf
 lib/fonts/huiwen.otf
+lib/fonts/huiwen.ttf
