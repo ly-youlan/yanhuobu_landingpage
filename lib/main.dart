@@ -4,17 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'pages/home_page.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 添加字体加载优化
-  PlatformAssetBundle().loadStructuredData<void>(
-    'FontManifest.json',
-    (string) async {
-      return; // 这里可以添加字体预加载逻辑
-    },
-  );
-
   runApp(const MyApp());
 }
 
@@ -23,6 +14,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 在这里预加载图片
+    precacheImage(
+      const AssetImage('lib/images/phone_035.png'),
+      context,
+    );
+
     return MaterialApp(
       title: '烟火簿',
       debugShowCheckedModeBanner: false,

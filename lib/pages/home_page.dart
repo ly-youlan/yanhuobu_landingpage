@@ -171,38 +171,59 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Widget _buildPhoneImage() {
-    return FadeInLeft(
-      duration: const Duration(milliseconds: 1200),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: TweenAnimationBuilder(
-          duration: const Duration(milliseconds: 800),
-          tween: Tween<double>(begin: 0.0, end: 1.0),
-          builder: (context, double value, child) {
-            return Transform.translate(
-              offset: Offset(0.0, 20 * (1 - value)), // 上移动画
-              child: Opacity(
-                opacity: value,
-                child: Transform.scale(
-                  scale: 0.95 + (0.05 * value), // 缩放动画
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    transform: Matrix4.identity()
-                      ..translate(0.0, _isHovered ? -10.0 : 0.0),
-                    child: Image.asset(
-                      'lib/images/phone_035.png',
-                      height: _getDeviceType(context) == DeviceType.mobile
-                          ? 600
-                          : 900,
+    return FutureBuilder(
+      // 使用 precacheImage 确保图片加载完成
+      future: precacheImage(
+        const AssetImage('lib/images/phone_035.png'),
+        context,
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return SizedBox(
+            height: _getDeviceType(context) == DeviceType.mobile ? 600 : 900,
+            child: const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(androidGreen),
+              ),
+            ),
+          );
+        }
+
+        // 图片加载完成后再显示动画
+        return FadeInLeft(
+          duration: const Duration(milliseconds: 1200),
+          child: MouseRegion(
+            onEnter: (_) => setState(() => _isHovered = true),
+            onExit: (_) => setState(() => _isHovered = false),
+            child: TweenAnimationBuilder(
+              duration: const Duration(milliseconds: 800),
+              tween: Tween<double>(begin: 0.0, end: 1.0),
+              builder: (context, double value, child) {
+                return Transform.translate(
+                  offset: Offset(0.0, 20 * (1 - value)),
+                  child: Opacity(
+                    opacity: value,
+                    child: Transform.scale(
+                      scale: 0.95 + (0.05 * value),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        transform: Matrix4.identity()
+                          ..translate(0.0, _isHovered ? -10.0 : 0.0),
+                        child: Image.asset(
+                          'lib/images/phone_035.png',
+                          height: _getDeviceType(context) == DeviceType.mobile
+                              ? 600
+                              : 900,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
