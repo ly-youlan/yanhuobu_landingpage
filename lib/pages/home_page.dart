@@ -32,6 +32,7 @@ class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _hoverController;
   bool _isHovered = false;
+  bool _isImageLoaded = false;
 
   // Android品牌色
   static const androidGreen = Color(0xFF3DDC84);
@@ -171,103 +172,57 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Widget _buildPhoneImage() {
-    return FutureBuilder(
-      // 使用 precacheImage 确保图片加载完成
-      future: precacheImage(
-        const AssetImage('lib/images/phone_035.png'),
-        context,
-      ),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return SizedBox(
-            height: _getDeviceType(context) == DeviceType.mobile ? 600 : 900,
-            child: const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(androidGreen),
-              ),
-            ),
-          );
-        }
-
-        // 图片加载完成后再显示动画
-        return FadeInLeft(
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        transform: Matrix4.identity()..translate(0.0, _isHovered ? -10.0 : 0.0),
+        child: FadeInLeft(
           duration: const Duration(milliseconds: 1200),
-          child: MouseRegion(
-            onEnter: (_) => setState(() => _isHovered = true),
-            onExit: (_) => setState(() => _isHovered = false),
-            child: TweenAnimationBuilder(
-              duration: const Duration(milliseconds: 800),
-              tween: Tween<double>(begin: 0.0, end: 1.0),
-              builder: (context, double value, child) {
-                return Transform.translate(
-                  offset: Offset(0.0, 20 * (1 - value)),
-                  child: Opacity(
-                    opacity: value,
-                    child: Transform.scale(
-                      scale: 0.95 + (0.05 * value),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        transform: Matrix4.identity()
-                          ..translate(0.0, _isHovered ? -10.0 : 0.0),
-                        child: Image.asset(
-                          'lib/images/phone_035.png',
-                          height: _getDeviceType(context) == DeviceType.mobile
-                              ? 600
-                              : 900,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+          child: Image.asset(
+            'lib/images/phone_035.png',
+            height: _getDeviceType(context) == DeviceType.mobile ? 600 : 900,
+            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+              if (frame != null && !_isImageLoaded) {
+                // 图片加载完成后更新状态
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() {
+                    _isImageLoaded = true;
+                  });
+                });
+              }
+              return child;
+            },
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   Widget _buildContent() {
+    if (!_isImageLoaded) {
+      return const SizedBox.shrink(); // 如果图片未加载完成，不显示内容
+    }
+
     final deviceType = _getDeviceType(context);
     final titleSize = deviceType == DeviceType.mobile ? 32.0 : 48.0;
     final subtitleSize = deviceType == DeviceType.mobile ? 18.0 : 24.0;
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: deviceType == DeviceType.mobile
-          ? CrossAxisAlignment.center
-          : CrossAxisAlignment.start,
-      children: [
-        DefaultTextStyle(
-          style: TextStyle(
-            fontSize: titleSize,
-            color: const Color(0xFF333333),
-            letterSpacing: 1.2,
-            fontFamily: 'huiwen',
-          ),
-          textAlign: deviceType == DeviceType.mobile
-              ? TextAlign.center
-              : TextAlign.start,
-          child: AnimatedTextKit(
-            animatedTexts: [
-              TypewriterAnimatedText(
-                '烟火簿 Beta',
-                speed: const Duration(milliseconds: 200),
-              ),
-            ],
-            isRepeatingAnimation: false,
-          ),
-        ),
-        const SizedBox(height: 24),
-        FadeIn(
-          delay: const Duration(milliseconds: 1500),
-          duration: const Duration(milliseconds: 200),
-          child: DefaultTextStyle(
+    return FadeIn(
+      duration: const Duration(milliseconds: 800),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: deviceType == DeviceType.mobile
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
+        children: [
+          DefaultTextStyle(
             style: TextStyle(
-              fontSize: subtitleSize,
-              color: const Color(0xFF666666),
-              letterSpacing: 0.5,
-              fontFamily: 'danya',
+              fontSize: titleSize,
+              color: const Color(0xFF333333),
+              letterSpacing: 1.2,
+              fontFamily: 'huiwen',
             ),
             textAlign: deviceType == DeviceType.mobile
                 ? TextAlign.center
@@ -275,24 +230,49 @@ class _MyHomePageState extends State<MyHomePage>
             child: AnimatedTextKit(
               animatedTexts: [
                 TypewriterAnimatedText(
-                  '一周食记，快速启程',
-                  speed: const Duration(milliseconds: 150),
+                  '烟火簿 Beta',
+                  speed: const Duration(milliseconds: 200),
                 ),
               ],
               isRepeatingAnimation: false,
-              totalRepeatCount: 1,
-              displayFullTextOnTap: true,
-              stopPauseOnTap: true,
             ),
           ),
-        ),
-        const SizedBox(height: 48),
-        FadeInRight(
-          delay: const Duration(milliseconds: 2800),
-          duration: const Duration(milliseconds: 1000),
-          child: _buildDownloadButtons(deviceType),
-        ),
-      ],
+          const SizedBox(height: 24),
+          FadeIn(
+            delay: const Duration(milliseconds: 1500),
+            duration: const Duration(milliseconds: 200),
+            child: DefaultTextStyle(
+              style: TextStyle(
+                fontSize: subtitleSize,
+                color: const Color(0xFF666666),
+                letterSpacing: 0.5,
+                fontFamily: 'danya',
+              ),
+              textAlign: deviceType == DeviceType.mobile
+                  ? TextAlign.center
+                  : TextAlign.start,
+              child: AnimatedTextKit(
+                animatedTexts: [
+                  TypewriterAnimatedText(
+                    '一周食记，快速启程',
+                    speed: const Duration(milliseconds: 150),
+                  ),
+                ],
+                isRepeatingAnimation: false,
+                totalRepeatCount: 1,
+                displayFullTextOnTap: true,
+                stopPauseOnTap: true,
+              ),
+            ),
+          ),
+          const SizedBox(height: 48),
+          FadeInRight(
+            delay: const Duration(milliseconds: 2800),
+            duration: const Duration(milliseconds: 1000),
+            child: _buildDownloadButtons(deviceType),
+          ),
+        ],
+      ),
     );
   }
 
@@ -409,6 +389,10 @@ class _MyHomePageState extends State<MyHomePage>
   ];
 
   Widget _buildVersionHistory() {
+    if (!_isImageLoaded) {
+      return const SizedBox.shrink(); // 如果图片未加载完成，不显示版本历史
+    }
+
     return FadeInUp(
       duration: const Duration(milliseconds: 1000),
       child: Column(
