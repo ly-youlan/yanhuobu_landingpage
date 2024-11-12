@@ -387,6 +387,16 @@ class _MyHomePageState extends State<MyHomePage>
 
   final List<Version> _versions = const [
     Version(
+      version: "v0.2.0",
+      date: "2024-11-12",
+      description: "Beta Demonstration Feature Update",
+      changes: [
+        "Swipe with tag filter",
+        "New MealPlan page",
+        "AI function demonstration",
+      ],
+    ),
+    Version(
       version: "v0.1.0",
       date: "2024-11-05",
       description: "Initial Beta Release",
@@ -396,16 +406,6 @@ class _MyHomePageState extends State<MyHomePage>
         "Swipe Logic demonstration",
       ],
     ),
-    // Version(
-    //   version: "v0.2.0",
-    //   date: "2024-03-25",
-    //   description: "Feature Update",
-    //   changes: [
-    //     "Data export feature",
-    //     "UI improvements",
-    //     "Bug fixes",
-    //   ],
-    // ),
   ];
 
   Widget _buildVersionHistory() {
